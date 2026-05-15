@@ -75,7 +75,8 @@ export default function App() {
       if (cupidPicks.length === 0) {
         setCupidPicks([target])
       } else if (cupidPicks.length === 1 && cupidPicks[0] !== target) {
-        setNightLogs(prev => ({ ...prev, [role]: `${cupidPicks[0]} & ${target}` }))
+        const combinedTargets = `${cupidPicks[0]} dan ${target}`
+        setNightLogs(prev => ({ ...prev, [role]: combinedTargets }))
         setCupidPicks([...cupidPicks, target])
       }
     } else {
@@ -86,15 +87,18 @@ export default function App() {
   const getSummaryMessage = () => {
     const role = rolesToCall[currentRoleIndex]
     const target = nightLogs[role]
-    if (!target && role !== "Cupid") return "Tidak ada aksi yang dilakukan."
+    
+    if (!target) {
+      return "Tidak ada aksi yang dilakukan."
+    }
     
     const targetPlayer = players.find(p => p.name === target)
     
     if (role === "Doppelganger") {
-      return `Doppelganger resmi meniru ${target}. Peran akan berubah saat ${target} mati.`
+      return `Doppelganger meniru ${target}. Perannya sebagai ${targetPlayer?.role}.`
     }
     if (role === "Cupid") {
-      return `Catatan: Cupid telah memasangkan ${cupidPicks[0]} dan ${cupidPicks[1]} sebagai kekasih.`
+      return `Cupid telah memasangkan ${target} sebagai kekasih.`
     }
     if (role === "Guardian") {
       return `Guardian berhasil melindungi ${target} dari serangan malam ini.`
@@ -105,8 +109,11 @@ export default function App() {
       }
       return `Kawanan Werewolf telah memutuskan untuk memangsa ${target}.`
     }
-    if (role === "Seer") {
-      return `Seer telah melihat identitas asli ${target}. Dia adalah seorang ${targetPlayer?.role}.`
+    if (role === "Sorceress" || role === "Seer") {
+      return `${role} telah menggunakan kemampuannya kepada ${target} dengan role ${targetPlayer?.role}.`
+    }
+    if (role === "Spellcaster") {
+      return `Spellcaster telah menggunakan skillnya untuk membungkam vote kepada ${target}.`
     }
     return `${role} telah menggunakan kemampuannya kepada ${target}.`
   }
@@ -142,7 +149,7 @@ export default function App() {
                 <span>{p.name}</span> <span style={{ color: 'rgb(255, 68, 68)' }}>{p.role}</span>
               </div>
             ))}
-            {players.length > 0 && <button onClick={() => startNight(1)} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '20px', cursor: 'pointer' }}>Mulai Permainan</button>}
+            {players.length > 0 && <button onClick={() => startNight(1)} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '20px', cursor: 'pointer', border: 'none' }}>Mulai Permainan</button>}
           </div>
         )}
 
