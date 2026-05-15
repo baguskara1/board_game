@@ -98,12 +98,17 @@ export default function App() {
 
   const handleAction = (role, target) => {
     if (role === "Cupid") {
-      if (cupidPicks.length === 0) {
+      const cupidPlayer = players.find(p => p.role === "Cupid")
+      const cupidName = cupidPlayer ? cupidPlayer.name : "Cupid"
+
+      if (cupidPicks.includes(target)) {
+        setCupidPicks([])
+        const newLogs = { ...nightLogs }
+        delete newLogs[role]
+        setNightLogs(newLogs)
+      } else {
         setCupidPicks([target])
-      } else if (cupidPicks.length === 1 && cupidPicks[0] !== target) {
-        const combinedTargets = `${cupidPicks[0]} dan ${target}`
-        setNightLogs(prev => ({ ...prev, [role]: combinedTargets }))
-        setCupidPicks([...cupidPicks, target])
+        setNightLogs(prev => ({ ...prev, [role]: `${cupidName} dan ${target}` }))
       }
     } else {
       setNightLogs(prev => ({ ...prev, [role]: target }))
@@ -129,7 +134,7 @@ export default function App() {
     const targetPlayer = players.find(p => p.name === target)
     
     if (role === "Doppelganger") return `Doppelganger meniru ${target}. Perannya sebagai ${targetPlayer?.role}`
-    if (role === "Cupid") return `Cupid telah memasangkan ${target} sebagai kekasih`
+    if (role === "Cupid") return `Cupid telah menjadikan ${target} sebagai kekasihnya`
     if (role === "Guardian") return `Guardian berhasil melindungi ${target} dari serangan malam ini`
     if (role === "Werewolf & Wolf Cub") {
       if (targetPlayer?.role === "Cursed") return `Catatan: Kawanan Werewolf menerkam ${target} (Cursed). Dia berubah menjadi Cursed Werewolf`
@@ -138,6 +143,41 @@ export default function App() {
     if (role === "Sorceress" || role === "Seer") return `${role} melihat ${target} dengan role ${targetPlayer?.role}`
     if (role === "Spellcaster") return `Spellcaster membungkam vote kepada ${target}`
     return `${role} beraksi pada ${target}`
+  }
+
+  const getNightActionSummary = () => {
+    const summaryList = []
+    Object.entries(nightLogs).forEach(([roleKey, targetName]) => {
+      const actors = players.filter(p => {
+        if (roleKey === "Werewolf & Wolf Cub") {
+          return p.role === "Werewolf" || p.role === "Wolf Cub"
+        }
+        return p.role === roleKey
+      }).map(p => p.name).join(" dan ")
+
+      let actorStr = actors
+      if (!actorStr) {
+        actorStr = roleKey === "Werewolf & Wolf Cub" ? "Werewolf" : roleKey
+      }
+
+      const targetPlayer = players.find(p => p.name === targetName)
+      const targetRole = targetPlayer ? targetPlayer.role : "Unknown"
+
+      if (roleKey === "Werewolf & Wolf Cub") {
+        summaryList.push(`${actorStr} (Werewolf) membunuh ${targetName} (${targetRole})`)
+      } else if (roleKey === "Guardian") {
+        summaryList.push(`${actorStr} (Guardian) melindungi ${targetName} (${targetRole})`)
+      } else if (roleKey === "Spellcaster") {
+        summaryList.push(`${actorStr} (Spellcaster) membungkam ${targetName} (${targetRole})`)
+      } else if (roleKey === "Seer" || roleKey === "Sorceress") {
+        summaryList.push(`${actorStr} (${roleKey}) melihat identitas ${targetName} (${targetRole})`)
+      } else if (roleKey === "Cupid") {
+        summaryList.push(`${actorStr} (Cupid) menjadikan ${targetName} (${targetRole}) sebagai kekasihnya`)
+      } else if (roleKey === "Doppelganger") {
+        summaryList.push(`${actorStr} (Doppelganger) meniru ${targetName} (${targetRole})`)
+      }
+    })
+    return summaryList
   }
 
   const nextStep = () => {
@@ -162,8 +202,12 @@ export default function App() {
   }
 
   const isPemainKekasih = (playerName) => {
-    const combinedNames = nightLogs['Cupid'] || ""
-    return combinedNames.split(' dan ').map(name => name.trim()).includes(playerName)
+    const cupidTarget = nightLogs['Cupid']
+    const cupidPlayer = players.find(p => p.role === 'Cupid')
+    
+    if (!cupidTarget || !cupidPlayer) return false
+    
+    return playerName === cupidTarget || playerName === cupidPlayer.name
   }
 
   if (winner === 'JOKER') {
@@ -228,14 +272,23 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Ringkasan dan Status Pemain:</h3>
+                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Ringkasan Kejadian Malam:</h3>
+                
+                <div style={{ padding: '10px 0', marginBottom: '20px', borderBottom: '1px solid rgb(51, 51, 51)' }}>
+                  {getNightActionSummary().map((text, i) => (
+                    <div key={i} style={{ padding: '5px 0', fontSize: '0.9rem', color: 'lightgray' }}>{text}</div>
+                  ))}
+                  {getNightActionSummary().length === 0 && <div style={{ color: 'gray' }}>Tidak ada aksi malam ini</div>}
+                </div>
+
+                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Status Pemain:</h3>
                 {players.map((p, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid rgb(34, 34, 34)', opacity: p.isAlive ? 1 : 0.5 }}>
                     <span>
                       {p.name} ({p.role}) {p.transformedTo && <span style={{ color: 'yellow' }}>
                         {p.role === 'Cursed' ? `( cursed berubah menjadi werewolf )` : `( doppelganger berubah menjadi ${p.transformedTo} )`}
                       </span>}
-                      {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.8rem' }}> ( terikat dengan cupid)</span>}
+                      {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.8rem' }}> ( terkena efek cupid )</span>}
                     </span>
                     <button onClick={() => toggleAlive(i)} style={{ padding: '5px 10px', backgroundColor: p.isAlive ? 'rgb(102, 0, 0)' : 'rgb(51, 51, 51)', color: 'white', border: 'none', cursor: 'pointer' }}>{p.isAlive ? 'Bunuh' : 'Hidupkan'}</button>
                   </div>
@@ -266,7 +319,7 @@ export default function App() {
                     {p.name} ({p.role}) {p.transformedTo && <span style={{ color: 'yellow' }}>
                       {p.role === 'Cursed' ? `( cursed berubah menjadi werewolf )` : `( doppelganger berubah menjadi ${p.transformedTo} )`}
                     </span>}
-                    {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.8rem' }}> ( terikat dengan cupid)</span>}
+                    {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.8rem' }}> ( terkena efek cupid )</span>}
                   </span>
                   <button onClick={() => handleExecution(realIdx)} style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', padding: '5px 15px', cursor: 'pointer' }}>Eksekusi</button>
                 </div>
