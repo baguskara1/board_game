@@ -21,7 +21,7 @@ export default function App() {
   const [rolesToCall, setRolesToCall] = useState([])
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0)
   const [nightLogs, setNightLogs] = useState({})
-  const [actionNotify, setActionNotify] = useState('')
+  const [showSummary, setShowSummary] = useState(false)
   const [cupidPicks, setCupidPicks] = useState([])
 
   useEffect(() => {
@@ -51,8 +51,8 @@ export default function App() {
   const startNight = (forcedDay) => {
     setPhase('NIGHT')
     setNightLogs({})
-    setActionNotify('')
     setCupidPicks([])
+    setShowSummary(false)
     const currentDay = forcedDay || dayCount
     const activeRoles = players.filter(p => p.isAlive).map(p => p.role)
     let toCall = NIGHT_ORDER.filter(role => activeRoles.includes(role))
@@ -64,37 +64,46 @@ export default function App() {
   }
 
   const handleAction = (role, target) => {
-    const targetPlayer = players.find(p => p.name === target)
-    let message = ""
-
-    if (role === "Doppelganger") {
-      message = `Kamu meniru ${target}. Jika dia mati, Kamu menjadi ${targetPlayer.role}.`
-    } else if (role === "Cupid") {
+    if (role === "Cupid") {
       if (cupidPicks.length === 0) {
         setCupidPicks([target])
-        message = `Pemain pertama dipilih: ${target}. Pilih satu lagi.`
-      } else {
-        message = `${cupidPicks[0]} dan ${target} resmi menjadi pasangan kekasih.`
+      } else if (cupidPicks.length === 1 && cupidPicks[0] !== target) {
         setNightLogs(prev => ({ ...prev, [role]: `${cupidPicks[0]} & ${target}` }))
-        setCupidPicks([])
+        setCupidPicks([...cupidPicks, target])
       }
-    } else if (role === "Seer") {
-      message = `Penglihatan tajam! ${target} ternyata adalah seorang ${targetPlayer.role}.`
-    } else if (role === "Priest") {
-      const isWolf = targetPlayer.role.includes("Wolf") || targetPlayer.role === "Sorceress"
-      message = isWolf ? `Doa berhasil! ${target} (Werewolf) akan mati.` : `Doa salah sasaran! Priest akan mati karena ${target} adalah Villager.`
-    } else if (role === "Guardian") {
-      message = `${target} kini dalam perlindungan perisai suci Kamu.`
-    } else if (role === "Werewolf") {
-      message = `Target pembunuhan malam ini adalah ${target}.`
     } else {
-      message = `Aksi untuk ${target} berhasil dicatat.`
-    }
-
-    if (role !== "Cupid" || cupidPicks.length === 1) {
       setNightLogs(prev => ({ ...prev, [role]: target }))
     }
-    setActionNotify(message)
+  }
+
+  const getSummaryMessage = () => {
+    const role = rolesToCall[currentRoleIndex]
+    const target = nightLogs[role]
+    if (!target && role !== "Cupid") return "Tidak ada aksi yang dilakukan."
+    
+    const targetPlayer = players.find(p => p.name === target)
+    
+    switch(role) {
+      case "Doppelganger": return `Doppelganger resmi meniru ${target}. Peran akan berubah saat ${target} mati.`
+      case "Cupid": return `Cupid telah memasangkan ${target} sebagai kekasih abadi.`
+      case "Guardian": return `Guardian berhasil melindungi ${target} dari serangan malam ini.`
+      case "Werewolf": return `Werewolf telah memutuskan untuk memangsa ${target}.`
+      case "Seer": return `Seer telah melihat identitas asli ${target}. Dia adalah seorang ${targetPlayer?.role}.`
+      case "Priest": 
+        const isEvil = targetPlayer?.role.includes("Wolf") || targetPlayer?.role === "Sorceress"
+        return isEvil ? `Doa Priest terkabul! ${target} (Werewolf) akan tewas.` : `Doa meleset! Priest akan tewas karena ${target} adalah warga baik.`
+      default: return `${role} telah menggunakan kemampuannya kepada ${target}.`
+    }
+  }
+
+  const nextStep = () => {
+    if (!showSummary) {
+      setShowSummary(true)
+    } else {
+      setShowSummary(false)
+      setCupidPicks([])
+      setCurrentRoleIndex(currentRoleIndex + 1)
+    }
   }
 
   return (
@@ -127,40 +136,43 @@ export default function App() {
             <h2 style={{ color: '#4444ff' }}>Malam {dayCount}</h2>
             {currentRoleIndex < rolesToCall.length ? (
               <div style={{ padding: '20px', backgroundColor: '#000022', border: '1px solid #4444ff', borderRadius: '8px' }}>
-                <h3 style={{ color: '#aaa' }}>Sekarang Bangun:</h3>
-                <h2 style={{ color: '#fff', fontSize: '2rem' }}>{rolesToCall[currentRoleIndex]}</h2>
-                
-                {actionNotify && (
-                  <div style={{ backgroundColor: '#2a0000', color: '#ff4444', padding: '10px', marginBottom: '15px', border: '1px solid #ff4444' }}>
-                    {actionNotify}
+                {!showSummary ? (
+                  <>
+                    <h3 style={{ color: '#aaa' }}>Sekarang Bangun:</h3>
+                    <h2 style={{ color: '#fff', fontSize: '2rem' }}>{rolesToCall[currentRoleIndex]}</h2>
+                    <div style={{ margin: '20px 0', border: '1px solid #333', padding: '5px' }}>
+                      {players.filter(p => p.isAlive).map((p, i) => (
+                        <div 
+                          key={i} 
+                          onClick={() => handleAction(rolesToCall[currentRoleIndex], p.name)}
+                          style={{ 
+                            padding: '12px', 
+                            cursor: 'pointer', 
+                            backgroundColor: nightLogs[rolesToCall[currentRoleIndex]] === p.name || cupidPicks.includes(p.name) ? '#4444ff' : 'transparent',
+                            borderBottom: '1px solid #222'
+                          }}
+                        >
+                          {p.name}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <h3 style={{ color: '#ff4444' }}>Aksi Tercatat:</h3>
+                    <p style={{ fontSize: '1.3rem', lineHeight: '1.6', color: '#fff' }}>{getSummaryMessage()}</p>
                   </div>
                 )}
-
-                <div style={{ margin: '20px 0', border: '1px solid #333', padding: '5px' }}>
-                  <p style={{ fontSize: '0.8rem', color: '#666', padding: '5px' }}>Pilih target aksi:</p>
-                  {players.filter(p => p.isAlive).map((p, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => handleAction(rolesToCall[currentRoleIndex], p.name)}
-                      style={{ 
-                        padding: '12px', 
-                        cursor: 'pointer', 
-                        backgroundColor: nightLogs[rolesToCall[currentRoleIndex]] === p.name || cupidPicks.includes(p.name) ? '#4444ff' : 'transparent',
-                        borderBottom: '1px solid #222'
-                      }}
-                    >
-                      {p.name}
-                    </div>
-                  ))}
-                </div>
                 
-                <button onClick={() => { setCurrentRoleIndex(currentRoleIndex + 1); setActionNotify(''); }} style={{ width: '100%', padding: '15px', backgroundColor: '#4444ff', color: '#fff', border: 'none', cursor: 'pointer' }}>Peran Berikutnya</button>
+                <button onClick={nextStep} style={{ width: '100%', padding: '15px', backgroundColor: '#4444ff', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                  {showSummary ? 'Konfirmasi & Lanjut' : 'Peran Berikutnya'}
+                </button>
               </div>
             ) : (
               <div>
-                <h3 style={{ color: '#ff4444' }}>Ringkasan Aksi Malam:</h3>
+                <h3 style={{ color: '#ff4444' }}>Ringkasan Malam Ini:</h3>
                 {Object.entries(nightLogs).map(([role, target]) => (
-                  <div key={role} style={{ padding: '5px 0', fontSize: '0.9rem' }}>• {role} memilih: <b>{target}</b></div>
+                  <div key={role} style={{ padding: '5px 0', fontSize: '0.9rem' }}>• <b>{role}</b> menggunakan skill ke: <b>{target}</b></div>
                 ))}
                 <hr style={{ borderColor: '#333', margin: '20px 0' }} />
                 {players.map((p, i) => (
