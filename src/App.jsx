@@ -30,11 +30,11 @@ export default function App() {
   const [showSummary, setShowSummary] = useState(false)
   const [winner, setWinner] = useState(null)
   
-  // States khusus Role
   const [doppelTarget, setDoppelTarget] = useState(null)
   const [cupidPair, setCupidPair] = useState([])
-  const [wwStatus, setWwStatus] = useState('NORMAL') // 'NORMAL', 'SKIP', 'DOUBLE'
+  const [wwStatus, setWwStatus] = useState('NORMAL')
   const [wwPicks, setWwPicks] = useState([])
+  const [hunterPrompt, setHunterPrompt] = useState(false)
 
   useEffect(() => {
     let interval = null
@@ -59,6 +59,10 @@ export default function App() {
     const deadPlayerRole = players[index].role
     const isActuallyDying = players[index].isAlive
 
+    if (isActuallyDying && (deadPlayerRole === 'Hunter' || players[index].transformedTo === 'Hunter')) {
+      setHunterPrompt(true)
+    }
+
     const newPlayers = players.map((p, i) => {
       if (i === index) return { ...p, isAlive: !p.isAlive }
       
@@ -77,7 +81,7 @@ export default function App() {
       setWinner('JOKER')
     }
     if (p.role === 'Wolf Cub' || p.transformedTo === 'Wolf Cub') {
-      setWwStatus('DOUBLE') // Werewolf dapat 2 kill malam berikutnya
+      setWwStatus('DOUBLE')
     }
     toggleAlive(index)
   }
@@ -106,7 +110,7 @@ export default function App() {
 
   const handleAction = (role, target) => {
     if (role === "Werewolf & Wolf Cub") {
-      if (wwStatus === 'SKIP') return // Skip karena Diseased
+      if (wwStatus === 'SKIP') return
       
       let newPicks = []
       if (wwStatus === 'DOUBLE') {
@@ -114,10 +118,10 @@ export default function App() {
           newPicks = wwPicks.filter(p => p !== target)
         } else {
           if (wwPicks.length < 2) newPicks = [...wwPicks, target]
-          else newPicks = [wwPicks[1], target] // Maksimal 2
+          else newPicks = [wwPicks[1], target]
         }
       } else {
-        newPicks = wwPicks.includes(target) ? [] : [target] // Normal 1 target
+        newPicks = wwPicks.includes(target) ? [] : [target]
       }
       
       setWwPicks(newPicks)
@@ -130,7 +134,6 @@ export default function App() {
         setNightLogs(newLogs)
       }
 
-      // Cursed Logic Transformasi Langsung
       if (newPicks.includes(target)) {
         const targetPlayer = players.find(p => p.name === target)
         if (targetPlayer?.role === "Cursed") {
@@ -138,7 +141,6 @@ export default function App() {
         }
       }
     } else {
-      // Logic Toggle Normal (Termasuk Cupid)
       if (nightLogs[role] === target) {
         const newLogs = { ...nightLogs }
         delete newLogs[role]
@@ -157,7 +159,7 @@ export default function App() {
     const role = rolesToCall[currentRoleIndex]
     
     if (role === "Werewolf & Wolf Cub" && wwStatus === 'SKIP') {
-      return "Kawanan Werewolf tidak bisa membunuh malam ini karena telah memakan Diseased kemarin."
+      return "Kawanan Werewolf tidak bisa membunuh malam ini karena telah memakan Diseased kemarin"
     }
 
     const target = nightLogs[role]
@@ -217,7 +219,6 @@ export default function App() {
     } else {
       const role = rolesToCall[currentRoleIndex]
       
-      // Simpan pasangan Cupid secara permanen
       if (role === 'Cupid' && nightLogs['Cupid']) {
         const cupidPlayer = players.find(p => p.role === 'Cupid')
         if (cupidPlayer) {
@@ -235,7 +236,6 @@ export default function App() {
     setTimeLeft(300)
     setIsTimerRunning(false)
 
-    // Cek apakah Werewolf membunuh Diseased malam ini
     let nextWwStatus = 'NORMAL'
     const wwTargetsStr = nightLogs["Werewolf & Wolf Cub"] || ""
     const killedDiseased = wwTargetsStr.split(" dan ").some(name => {
@@ -276,7 +276,7 @@ export default function App() {
       <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: 'serif' }}>
         <h1 style={{ color: COLOR_LONERS, fontSize: '4rem' }}>Joker Menang</h1>
         <p>Warga telah tertipu dan mengeksekusi Joker</p>
-        <button onClick={() => window.location.reload()} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>Main Lagi</button>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer', border: 'none' }}>Main Lagi</button>
       </div>
     )
   }
@@ -369,7 +369,16 @@ export default function App() {
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ color: 'rgb(204, 204, 0)' }}>Pagi {dayCount}</h2>
             <div style={{ fontSize: '3.5rem', margin: '20px 0' }}>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</div>
-            <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ padding: '10px 20px', cursor: 'pointer' }}>{isTimerRunning ? 'Pause' : 'Start'}</button>
+            <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ padding: '10px 20px', cursor: 'pointer', border: 'none' }}>{isTimerRunning ? 'Pause' : 'Start'}</button>
+            
+            {hunterPrompt && (
+              <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '20px 0', borderRadius: '8px', border: '1px solid red' }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Peringatan Hunter Mati</h3>
+                <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Hunter telah terbunuh. Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting</p>
+                <button onClick={() => setHunterPrompt(false)} style={{ padding: '8px 15px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Tutup Peringatan</button>
+              </div>
+            )}
+
             <button onClick={() => setPhase('VOTING')} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '40px', border: 'none', cursor: 'pointer' }}>Masuk Sesi Voting</button>
           </div>
         )}
@@ -377,6 +386,12 @@ export default function App() {
         {phase === 'VOTING' && (
           <div>
             <h2 style={{ color: 'rgb(255, 68, 68)' }}>Sesi Voting</h2>
+            {hunterPrompt && (
+              <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '20px 0', borderRadius: '8px', border: '1px solid red' }}>
+                <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Hunter telah terbunuh. Silakan eksekusi pemain yang ditembak Hunter</p>
+                <button onClick={() => setHunterPrompt(false)} style={{ padding: '8px 15px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Selesai</button>
+              </div>
+            )}
             {players.filter(p => p.isAlive).map((p, i) => {
               const realIdx = players.findIndex(orig => orig.name === p.name)
               return (
