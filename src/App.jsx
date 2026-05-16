@@ -156,7 +156,7 @@ export default function App() {
   }
 
   const handleResetGame = () => {
-    if (window.confirm("Hapus semua data dan mulai permainan baru")) {
+    if (window.confirm("Hapus semua data dan mulai permainan baru?")) {
       localStorage.removeItem('werewolf_game_state')
       window.location.reload()
     }
@@ -324,19 +324,16 @@ export default function App() {
 
     const target = nightLogs[role]
     if (!target) return "Tidak ada aksi yang dilakukan"
-    
-    if (role === "Werewolf & Wolf Cub") {
-      return "Kawanan Werewolf telah memutuskan untuk memangsa target tersebut"
-    }
 
     const targetPlayer = players.find(p => p.name === target)
     
-    if (role === "Doppelganger") return "Doppelganger meniru target tersebut"
-    if (role === "Cupid") return "Cupid telah menjadikan target tersebut sebagai kekasihnya"
-    if (role === "Guardian") return "Guardian berhasil melindungi target tersebut dari serangan malam ini"
-    if (role === "Sorceress" || role === "Seer") return "Peran tersebut melihat target dengan jelas"
-    if (role === "Spellcaster") return "Spellcaster membungkam vote kepada target tersebut"
-    return "Peran tersebut beraksi pada target"
+    if (role === "Werewolf & Wolf Cub") return `Kawanan Werewolf telah memutuskan untuk memangsa ${target}`
+    if (role === "Doppelganger") return `Doppelganger meniru ${target} Perannya sebagai ${targetPlayer?.role}`
+    if (role === "Cupid") return `Cupid telah menjadikan ${target} sebagai kekasihnya`
+    if (role === "Guardian") return `Guardian berhasil melindungi ${target} dari serangan malam ini`
+    if (role === "Sorceress" || role === "Seer") return `${role} melihat ${target} dengan role ${targetPlayer?.role}`
+    if (role === "Spellcaster") return `Spellcaster membungkam vote kepada ${target}`
+    return `${role} beraksi pada ${target}`
   }
 
   const getNightActionSummary = () => {
@@ -356,17 +353,17 @@ export default function App() {
         const targetRole = targetPlayer ? (targetPlayer.transformedTo || targetPlayer.role) : "Unknown"
 
         if (roleKey === "Werewolf & Wolf Cub") {
-          summaryList.push("Kawanan membunuh target tersebut")
+          summaryList.push(`${actorStr} (Werewolf) membunuh ${tName} (${targetRole})`)
         } else if (roleKey === "Guardian") {
-          summaryList.push("Guardian melindungi target tersebut")
+          summaryList.push(`${actorStr} (Guardian) melindungi ${tName} (${targetRole})`)
         } else if (roleKey === "Spellcaster") {
-          summaryList.push("Spellcaster membungkam target tersebut")
+          summaryList.push(`${actorStr} (Spellcaster) membungkam ${tName} (${targetRole})`)
         } else if (roleKey === "Seer" || roleKey === "Sorceress") {
-          summaryList.push("Peran tersebut melihat identitas target")
+          summaryList.push(`${actorStr} (${roleKey}) melihat identitas ${tName} (${targetRole})`)
         } else if (roleKey === "Cupid") {
-          summaryList.push("Cupid menjadikan target tersebut sebagai kekasihnya")
+          summaryList.push(`${actorStr} (Cupid) menjadikan ${tName} (${targetRole}) sebagai kekasihnya`)
         } else if (roleKey === "Doppelganger") {
-          summaryList.push("Doppelganger meniru target tersebut")
+          summaryList.push(`${actorStr} (Doppelganger) meniru ${tName} (${targetRole})`)
         }
       })
     })
