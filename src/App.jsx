@@ -288,7 +288,7 @@ export default function App() {
 
     const targetPlayer = players.find(p => p.name === target)
     
-    if (role === "Doppelganger") return `Doppelganger meniru ${target} Perannya sebagai ${targetPlayer?.role}`
+    if (role === "Doppelganger") return `Doppelganger meniru ${target}. Perannya sebagai ${targetPlayer?.role}`
     if (role === "Cupid") return `Cupid telah menjadikan ${target} sebagai kekasihnya`
     if (role === "Guardian") return `Guardian berhasil melindungi ${target} dari serangan malam ini`
     if (role === "Sorceress" || role === "Seer") return `${role} melihat ${target} dengan role ${targetPlayer?.role}`
@@ -415,7 +415,7 @@ export default function App() {
       <style>
         {`
           * { box-sizing: border-box }
-          body, html { margin: 0 padding: 0 background-color: rgb(5, 5, 5) }
+          body, html { margin: 0; padding: 0; background-color: rgb(5, 5, 5) }
           input, select, button { font-family: serif }
         `}
       </style>
@@ -473,7 +473,7 @@ export default function App() {
                       <span style={{ flex: '1 1 auto', wordBreak: 'break-word', paddingRight: '10px' }}>{p.name}</span>
                       <span style={{ flex: '0 0 auto', color: getRoleColor(p), fontWeight: 'bold' }}>{p.role}</span>
                       <div style={{ display: 'flex', gap: '5px' }}>
-                        <button onClick={() => { setEditingIndex(i) setEditNameInput(p.name) }} style={{ padding: '5px 10px', backgroundColor: 'rgb(51, 51, 51)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
+                        <button onClick={() => { setEditingIndex(i); setEditNameInput(p.name); }} style={{ padding: '5px 10px', backgroundColor: 'rgb(51, 51, 51)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
                         <button onClick={() => removePlayer(i)} style={{ padding: '5px 10px', backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Hapus</button>
                       </div>
                     </>
@@ -494,7 +494,7 @@ export default function App() {
                 {!showSummary ? (
                   <>
                     <h3 style={{ color: 'lightgray', margin: '0 0 15px 0', fontSize: '1.1rem', lineHeight: '1.4' }}>
-                      Sekarang Bangun<br/>
+                      Sekarang Bangun:<br/>
                       <span style={{ color: 'white', fontSize: '1.5rem' }}>{rolesToCall[currentRoleIndex]}</span>
                       {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'DOUBLE' && <div style={{ color: 'rgb(255, 68, 68)', fontSize: '0.9rem', marginTop: '5px' }}>Pilih 2 Pemain Wolf Cub Balas Dendam</div>}
                       {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'SKIP' && <div style={{ color: 'rgb(255, 255, 68)', fontSize: '0.9rem', marginTop: '5px' }}>Terkena Efek Diseased Skip</div>}
@@ -510,7 +510,7 @@ export default function App() {
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Aksi Tercatat</h3>
+                    <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Aksi Tercatat:</h3>
                     <p style={{ fontSize: '1.1rem', color: 'white', lineHeight: '1.5', margin: '0' }}>{getSummaryMessage()}</p>
                   </div>
                 )}
@@ -518,7 +518,7 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Ringkasan Kejadian Malam</h3>
+                <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Ringkasan Kejadian Malam:</h3>
                 
                 <div style={{ padding: '15px', marginBottom: '20px', backgroundColor: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgb(51, 51, 51)', borderRadius: '8px' }}>
                   {getNightActionSummary().map((text, i) => (
@@ -527,7 +527,7 @@ export default function App() {
                   {getNightActionSummary().length === 0 && <div style={{ color: 'gray', textAlign: 'center', padding: '10px 0' }}>Tidak ada aksi malam ini</div>}
                 </div>
 
-                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Status Pemain</h3>
+                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Status Pemain:</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {players.map((p, i) => (
                     <div key={i} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'black', border: '1px solid rgb(34, 34, 34)', borderRadius: '4px', opacity: p.isAlive ? 1 : 0.5, gap: '10px' }}>
@@ -560,7 +560,7 @@ export default function App() {
             {hunterPrompt && (
               <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '20px', margin: '30px 0', borderRadius: '8px', border: '2px solid red', textAlign: 'left' }}>
                 <h3 style={{ margin: '0 0 15px 0', color: 'yellow' }}>Peringatan Hunter Mati</h3>
-                <p style={{ margin: '0 0 20px 0', fontSize: '1rem', lineHeight: '1.5' }}>Hunter telah terbunuh Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting</p>
+                <p style={{ margin: '0 0 20px 0', fontSize: '1rem', lineHeight: '1.5' }}>Hunter telah terbunuh. Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting</p>
                 <button onClick={() => setHunterPrompt(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px' }}>Tutup Peringatan</button>
               </div>
             )}
@@ -574,7 +574,7 @@ export default function App() {
             <h2 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Sesi Voting</h2>
             {hunterPrompt && (
               <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '0 0 20px 0', borderRadius: '8px', border: '2px solid red' }}>
-                <p style={{ margin: '0 0 15px 0', fontSize: '1rem', lineHeight: '1.4' }}>Hunter telah terbunuh Silakan eksekusi pemain yang ditembak Hunter terlebih dahulu</p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '1rem', lineHeight: '1.4' }}>Hunter telah terbunuh. Silakan eksekusi pemain yang ditembak Hunter terlebih dahulu</p>
                 <button onClick={() => setHunterPrompt(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px' }}>Selesai Eksekusi Hunter</button>
               </div>
             )}
@@ -600,7 +600,7 @@ export default function App() {
               })}
             </div>
             
-            <button onClick={() => { setDayCount(dayCount + 1) startNight(dayCount + 1) }} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(0, 0, 68)', color: 'white', marginTop: '30px', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Lanjut Malam Berikutnya</button>
+            <button onClick={() => { setDayCount(dayCount + 1); startNight(dayCount + 1); }} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(0, 0, 68)', color: 'white', marginTop: '30px', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Lanjut Malam Berikutnya</button>
           </div>
         )}
       </div>
