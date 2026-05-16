@@ -16,6 +16,26 @@ const COLOR_WEREWOLF = 'rgb(255, 68, 68)'
 const COLOR_LONERS = 'rgb(153, 50, 204)'
 const COLOR_VILLAGER = 'rgb(0, 204, 102)'
 
+const ROLE_ICONS = {
+  Werewolf: "WEREWOLF.png",
+  Sorceress: "Sorceres.png",
+  "Wolf Cub": "wolfcub.png",
+  Cursed: "cursed.png",
+  Lycan: "lycan.png",
+  Cupid: "cupid.png",
+  Villager: "villager.png",
+  Mayor: "mayor.png",
+  Doppelganger: "doppelganger.png",
+  Guardian: "guardian.png",
+  Diseased: "diseased.png",
+  Hunter: "hunter.png",
+  Priest: "priest.png",
+  Joker: "joker.png",
+  Spellcaster: "speelcaster.png",
+  Seer: "seer.png",
+  "Cursed Werewolf": "WEREWOLF.png"
+}
+
 export default function App() {
   const savedState = JSON.parse(localStorage.getItem('werewolf_game_state') || '{}')
 
@@ -78,6 +98,27 @@ export default function App() {
       osc.stop(ctx.currentTime + 1.5)
     } catch (e) {
       console.log('Audio tidak didukung')
+    }
+  }
+
+  const checkVictoryConditions = (updatedPlayers) => {
+    const alivePlayers = updatedPlayers.filter(p => p.isAlive)
+    const aliveWerewolves = alivePlayers.filter(p => TEAM_WEREWOLF.includes(p.transformedTo || p.role))
+    const aliveVillagers = alivePlayers.filter(p => !TEAM_WEREWOLF.includes(p.transformedTo || p.role) && !TEAM_LONERS.includes(p.role))
+
+    if (aliveWerewolves.length === 0) {
+      setWinner('WARGA')
+      return
+    }
+
+    if (aliveWerewolves.length >= aliveVillagers.length) {
+      setWinner('WEREWOLF')
+      return
+    }
+
+    if (alivePlayers.length === 2 && alivePlayers.every(p => cupidPair.includes(p.name))) {
+        setWinner('CUPID_PAIR')
+        return
     }
   }
 
@@ -164,6 +205,7 @@ export default function App() {
     })
     
     setPlayers(newPlayers)
+    checkVictoryConditions(newPlayers)
   }
 
   const handleExecution = (index) => {
@@ -172,7 +214,7 @@ export default function App() {
     
     setGameHistory(prev => [...prev, { 
       phaseLabel: `Siang ${dayCount} - Hasil Voting`, 
-      logs: [`${p.name} (${p.transformedTo || p.role}) telah dieksekusi.`] 
+      logs: [`${p.name} (${p.transformedTo || p.role}) telah dieksekusi`] 
     }])
 
     if (p.role === 'Joker') {
@@ -199,6 +241,7 @@ export default function App() {
     })
     
     setPlayers(newPlayers)
+    checkVictoryConditions(newPlayers)
   }
 
   const startNight = (forcedDay) => {
@@ -358,7 +401,7 @@ export default function App() {
     const summary = getNightActionSummary()
     setGameHistory(prev => [...prev, { 
       phaseLabel: `Malam ${dayCount}`, 
-      logs: summary.length > 0 ? summary : ["Tidak ada aksi yang membuahkan hasil atau dilakukan"] 
+      logs: summary.length > 0 ? summary : ["Tidak ada aksi yang membuahkan hasil atau dilakukan."] 
     }])
 
     let nextWwStatus = 'NORMAL'
@@ -400,12 +443,28 @@ export default function App() {
     return targets.split(" dan ").includes(playerName)
   }
 
-  if (winner === 'JOKER') {
+  const renderRoleIcon = (roleName) => {
+    const iconData = ROLE_ICONS[roleName]
+    if (!iconData) return null
+    return <img src={iconData} alt={roleName} style={{ width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '8px' }} />
+  }
+
+  if (winner) {
+    const getWinnerMessage = () => {
+        if (winner === 'WARGA') return "Seluruh Werewolf Telah Musnah Tim Warga Menang"
+        if (winner === 'WEREWOLF') return "Werewolf Telah Menguasai Desa Tim Werewolf Menang"
+        if (winner === 'JOKER') return "Warga telah tertipu dan mengeksekusi Joker Joker Menang"
+        if (winner === 'CUPID_PAIR') return "Pasangan Cupid adalah dua orang terakhir yang tersisa Pasangan Cupid Menang"
+        return "Permainan Selesai"
+    }
+
+    const winnerColor = winner === 'WARGA' ? COLOR_VILLAGER : (winner === 'WEREWOLF' ? COLOR_WEREWOLF : COLOR_LONERS)
+
     return (
       <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: 'serif', padding: '20px', textAlign: 'center' }}>
-        <h1 style={{ color: COLOR_LONERS, fontSize: 'clamp(2.5rem, 5vw, 4rem)', margin: '0 0 20px 0' }}>Joker Menang</h1>
-        <p style={{ fontSize: '1.2rem', margin: '0 0 30px 0' }}>Warga telah tertipu dan mengeksekusi Joker</p>
-        <button onClick={handleResetGame} style={{ padding: '15px 30px', backgroundColor: COLOR_LONERS, color: 'white', border: 'none', cursor: 'pointer', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', width: '100%', maxWidth: '300px' }}>Selesai dan Main Lagi</button>
+        <h1 style={{ color: winnerColor, fontSize: 'clamp(2.5rem, 5vw, 4rem)', margin: '0 0 20px 0' }}>Selesai</h1>
+        <p style={{ fontSize: '1.2rem', margin: '0 0 30px 0', color: 'lightgray' }}>{getWinnerMessage()}</p>
+        <button onClick={handleResetGame} style={{ padding: '15px 30px', backgroundColor: winnerColor, color: 'white', border: 'none', cursor: 'pointer', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', width: '100%', maxWidth: '300px' }}>Reset Permainan Baru</button>
       </div>
     )
   }
@@ -444,7 +503,7 @@ export default function App() {
         </div>
       )}
 
-      <h1 style={{ color: 'darkred', textAlign: 'center', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', margin: '10px 0 20px 0' }}>Werewolf But As A HOST</h1>
+      <h1 style={{ color: 'darkred', textAlign: 'center', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', margin: '10px 0 20px 0' }}>WEREWOLF BUT AS A HOST</h1>
       
       <div style={{ backgroundColor: 'rgb(17, 17, 17)', padding: '20px', borderRadius: '8px', border: '1px solid rgb(102, 0, 0)', maxWidth: '600px', width: '100%', margin: '0 auto' }}>
         
@@ -471,9 +530,14 @@ export default function App() {
                   ) : (
                     <>
                       <span style={{ flex: '1 1 auto', wordBreak: 'break-word', paddingRight: '10px' }}>{p.name}</span>
-                      <span style={{ flex: '0 0 auto', color: getRoleColor(p), fontWeight: 'bold' }}>{p.role}</span>
+                      <span style={{ flex: '0 0 auto', color: getRoleColor(p), fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                        {renderRoleIcon(p.role)} {p.role}
+                      </span>
                       <div style={{ display: 'flex', gap: '5px' }}>
-                        <button onClick={() => { setEditingIndex(i); setEditNameInput(p.name); }} style={{ padding: '5px 10px', backgroundColor: 'rgb(51, 51, 51)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
+                        <button onClick={() => {
+                          setEditingIndex(i)
+                          setEditNameInput(p.name)
+                        }} style={{ padding: '5px 10px', backgroundColor: 'rgb(51, 51, 51)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
                         <button onClick={() => removePlayer(i)} style={{ padding: '5px 10px', backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Hapus</button>
                       </div>
                     </>
@@ -494,8 +558,10 @@ export default function App() {
                 {!showSummary ? (
                   <>
                     <h3 style={{ color: 'lightgray', margin: '0 0 15px 0', fontSize: '1.1rem', lineHeight: '1.4' }}>
-                      Sekarang Bangun:<br/>
-                      <span style={{ color: 'white', fontSize: '1.5rem' }}>{rolesToCall[currentRoleIndex]}</span>
+                      Sekarang Bangun<br/>
+                      <span style={{ color: 'white', fontSize: '1.5rem', display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                        {renderRoleIcon(rolesToCall[currentRoleIndex])} {rolesToCall[currentRoleIndex]}
+                      </span>
                       {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'DOUBLE' && <div style={{ color: 'rgb(255, 68, 68)', fontSize: '0.9rem', marginTop: '5px' }}>Pilih 2 Pemain Wolf Cub Balas Dendam</div>}
                       {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'SKIP' && <div style={{ color: 'rgb(255, 255, 68)', fontSize: '0.9rem', marginTop: '5px' }}>Terkena Efek Diseased Skip</div>}
                     </h3>
@@ -510,7 +576,7 @@ export default function App() {
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Aksi Tercatat:</h3>
+                    <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Aksi Tercatat</h3>
                     <p style={{ fontSize: '1.1rem', color: 'white', lineHeight: '1.5', margin: '0' }}>{getSummaryMessage()}</p>
                   </div>
                 )}
@@ -518,7 +584,7 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Ringkasan Kejadian Malam:</h3>
+                <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Ringkasan Kejadian Malam</h3>
                 
                 <div style={{ padding: '15px', marginBottom: '20px', backgroundColor: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgb(51, 51, 51)', borderRadius: '8px' }}>
                   {getNightActionSummary().map((text, i) => (
@@ -527,14 +593,16 @@ export default function App() {
                   {getNightActionSummary().length === 0 && <div style={{ color: 'gray', textAlign: 'center', padding: '10px 0' }}>Tidak ada aksi malam ini</div>}
                 </div>
 
-                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Status Pemain:</h3>
+                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Status Pemain</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {players.map((p, i) => (
                     <div key={i} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'black', border: '1px solid rgb(34, 34, 34)', borderRadius: '4px', opacity: p.isAlive ? 1 : 0.5, gap: '10px' }}>
                       <span style={{ flex: '1 1 auto', wordBreak: 'break-word', lineHeight: '1.4' }}>
                         <span style={{ fontWeight: 'bold', textDecoration: p.isAlive ? 'none' : 'line-through' }}>{p.name}</span>
                         <br/>
-                        <span style={{ fontSize: '0.9rem', color: 'gray' }}>{p.role}</span>
+                        <span style={{ fontSize: '0.9rem', color: 'gray', display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                          {renderRoleIcon(p.role)} {p.role}
+                        </span>
                         {p.transformedTo && <span style={{ color: 'yellow', fontSize: '0.85rem', display: 'block', marginTop: '4px' }}>
                           {p.role === 'Cursed' ? `cursed berubah menjadi werewolf` : `doppelganger berubah menjadi ${p.transformedTo}`}
                         </span>}
@@ -560,7 +628,7 @@ export default function App() {
             {hunterPrompt && (
               <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '20px', margin: '30px 0', borderRadius: '8px', border: '2px solid red', textAlign: 'left' }}>
                 <h3 style={{ margin: '0 0 15px 0', color: 'yellow' }}>Peringatan Hunter Mati</h3>
-                <p style={{ margin: '0 0 20px 0', fontSize: '1rem', lineHeight: '1.5' }}>Hunter telah terbunuh. Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting</p>
+                <p style={{ margin: '0 0 20px 0', fontSize: '1rem', lineHeight: '1.5' }}>Hunter telah terbunuh Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting</p>
                 <button onClick={() => setHunterPrompt(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px' }}>Tutup Peringatan</button>
               </div>
             )}
@@ -574,7 +642,7 @@ export default function App() {
             <h2 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Sesi Voting</h2>
             {hunterPrompt && (
               <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '0 0 20px 0', borderRadius: '8px', border: '2px solid red' }}>
-                <p style={{ margin: '0 0 15px 0', fontSize: '1rem', lineHeight: '1.4' }}>Hunter telah terbunuh. Silakan eksekusi pemain yang ditembak Hunter terlebih dahulu</p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '1rem', lineHeight: '1.4' }}>Hunter telah terbunuh Silakan eksekusi pemain yang ditembak Hunter terlebih dahulu</p>
                 <button onClick={() => setHunterPrompt(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px' }}>Selesai Eksekusi Hunter</button>
               </div>
             )}
@@ -587,7 +655,9 @@ export default function App() {
                     <span style={{ flex: '1 1 auto', wordBreak: 'break-word', lineHeight: '1.4' }}>
                       <span style={{ fontWeight: 'bold' }}>{p.name}</span>
                       <br/>
-                      <span style={{ fontSize: '0.9rem', color: 'gray' }}>{p.role}</span>
+                      <span style={{ fontSize: '0.9rem', color: 'gray', display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                        {renderRoleIcon(p.role)} {p.role}
+                      </span>
                       {p.transformedTo && <span style={{ color: 'yellow', fontSize: '0.85rem', display: 'block', marginTop: '4px' }}>
                         {p.role === 'Cursed' ? `cursed berubah menjadi werewolf` : `doppelganger berubah menjadi ${p.transformedTo}`}
                       </span>}
@@ -600,7 +670,10 @@ export default function App() {
               })}
             </div>
             
-            <button onClick={() => { setDayCount(dayCount + 1); startNight(dayCount + 1); }} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(0, 0, 68)', color: 'white', marginTop: '30px', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Lanjut Malam Berikutnya</button>
+            <button onClick={() => {
+              setDayCount(dayCount + 1)
+              startNight(dayCount + 1)
+            }} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(0, 0, 68)', color: 'white', marginTop: '30px', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Lanjut Malam Berikutnya</button>
           </div>
         )}
       </div>
