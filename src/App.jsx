@@ -273,56 +273,69 @@ export default function App() {
 
   if (winner === 'JOKER') {
     return (
-      <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: 'serif' }}>
-        <h1 style={{ color: COLOR_LONERS, fontSize: '4rem' }}>Joker Menang</h1>
-        <p>Warga telah tertipu dan mengeksekusi Joker</p>
-        <button onClick={() => window.location.reload()} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer', border: 'none' }}>Main Lagi</button>
+      <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: 'serif', padding: '20px', textAlign: 'center' }}>
+        <h1 style={{ color: COLOR_LONERS, fontSize: 'clamp(2.5rem, 5vw, 4rem)', margin: '0 0 20px 0' }}>Joker Menang</h1>
+        <p style={{ fontSize: '1.2rem', margin: '0 0 30px 0' }}>Warga telah tertipu dan mengeksekusi Joker</p>
+        <button onClick={() => window.location.reload()} style={{ padding: '15px 30px', backgroundColor: COLOR_LONERS, color: 'white', border: 'none', cursor: 'pointer', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', width: '100%', maxWidth: '300px' }}>Main Lagi</button>
       </div>
     )
   }
 
   return (
-    <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'lightgray', minHeight: '100vh', padding: '2rem', fontFamily: 'serif' }}>
-      <h1 style={{ color: 'darkred', textAlign: 'center' }}>Game Master Dashboard</h1>
+    <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'lightgray', minHeight: '100vh', padding: '15px', fontFamily: 'serif', boxSizing: 'border-box' }}>
+      <style>
+        {`
+          * { box-sizing: border-box; }
+          body, html { margin: 0; padding: 0; background-color: rgb(5, 5, 5); }
+          input, select, button { font-family: serif; }
+        `}
+      </style>
       
-      <div style={{ backgroundColor: 'rgb(17, 17, 17)', padding: '2rem', borderRadius: '8px', border: '1px solid rgb(102, 0, 0)', maxWidth: '600px', margin: '0 auto' }}>
+      <h1 style={{ color: 'darkred', textAlign: 'center', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', margin: '10px 0 20px 0' }}>Game Master Dashboard</h1>
+      
+      <div style={{ backgroundColor: 'rgb(17, 17, 17)', padding: '20px', borderRadius: '8px', border: '1px solid rgb(102, 0, 0)', maxWidth: '600px', width: '100%', margin: '0 auto' }}>
         
         {phase === 'SETUP' && (
           <div>
-            <h2 style={{ color: 'white' }}>Fase Persiapan</h2>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="Nama Pemain" style={{ flex: 1, padding: '10px', backgroundColor: 'black', color: 'white', border: '1px solid rgb(68, 68, 68)' }} />
-              <select value={roleInput} onChange={(e) => setRoleInput(e.target.value)} style={{ padding: '10px', backgroundColor: 'black', color: getBaseRoleColor(roleInput), border: '1px solid rgb(68, 68, 68)' }}>
+            <h2 style={{ color: 'white', marginTop: 0 }}>Fase Persiapan</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
+              <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="Nama Pemain" style={{ flex: '1 1 100%', minWidth: '140px', padding: '12px', backgroundColor: 'black', color: 'white', border: '1px solid rgb(68, 68, 68)', borderRadius: '4px' }} />
+              <select value={roleInput} onChange={(e) => setRoleInput(e.target.value)} style={{ flex: '1 1 100%', minWidth: '140px', padding: '12px', backgroundColor: 'black', color: getBaseRoleColor(roleInput), border: '1px solid rgb(68, 68, 68)', borderRadius: '4px' }}>
                 {ROLE_LIST.map(role => <option key={role} value={role} style={{ color: getBaseRoleColor(role) }}>{role}</option>)}
               </select>
-              <button onClick={addPlayer} style={{ padding: '10px 20px', backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', cursor: 'pointer' }}>Tambah</button>
+              <button onClick={addPlayer} style={{ flex: '1 1 100%', padding: '12px', backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold' }}>Tambah Pemain</button>
             </div>
-            {players.map((p, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid rgb(34, 34, 34)' }}>
-                <span>{p.name}</span>
-                <span style={{ color: getRoleColor(p) }}>{p.role}</span>
-              </div>
-            ))}
-            {players.length > 0 && <button onClick={() => startNight(1)} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '20px', cursor: 'pointer', border: 'none' }}>Mulai Permainan</button>}
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {players.map((p, i) => (
+                <div key={i} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'black', border: '1px solid rgb(34, 34, 34)', borderRadius: '4px' }}>
+                  <span style={{ flex: '1 1 auto', wordBreak: 'break-word', paddingRight: '10px' }}>{p.name}</span>
+                  <span style={{ flex: '0 0 auto', color: getRoleColor(p), fontWeight: 'bold' }}>{p.role}</span>
+                </div>
+              ))}
+            </div>
+            
+            {players.length > 0 && <button onClick={() => startNight(1)} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '25px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Mulai Permainan</button>}
           </div>
         )}
 
         {phase === 'NIGHT' && (
           <div>
-            <h2 style={{ color: 'rgb(68, 68, 255)' }}>Malam {dayCount}</h2>
+            <h2 style={{ color: 'rgb(68, 68, 255)', marginTop: 0 }}>Malam {dayCount}</h2>
             {currentRoleIndex < rolesToCall.length ? (
               <div style={{ padding: '20px', backgroundColor: 'rgb(0, 0, 34)', border: '1px solid rgb(68, 68, 255)', borderRadius: '8px' }}>
                 {!showSummary ? (
                   <>
-                    <h3 style={{ color: 'lightgray' }}>
-                      Sekarang Bangun: {rolesToCall[currentRoleIndex]}
-                      {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'DOUBLE' ? ' (Pilih 2 Pemain - Wolf Cub Balas Dendam)' : ''}
-                      {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'SKIP' ? ' (Terkena Efek Diseased - Skip)' : ''}
+                    <h3 style={{ color: 'lightgray', margin: '0 0 15px 0', fontSize: '1.1rem', lineHeight: '1.4' }}>
+                      Sekarang Bangun:<br/>
+                      <span style={{ color: 'white', fontSize: '1.5rem' }}>{rolesToCall[currentRoleIndex]}</span>
+                      {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'DOUBLE' && <div style={{ color: 'rgb(255, 68, 68)', fontSize: '0.9rem', marginTop: '5px' }}>(Pilih 2 Pemain - Wolf Cub Balas Dendam)</div>}
+                      {rolesToCall[currentRoleIndex] === 'Werewolf & Wolf Cub' && wwStatus === 'SKIP' && <div style={{ color: 'rgb(255, 255, 68)', fontSize: '0.9rem', marginTop: '5px' }}>(Terkena Efek Diseased - Skip)</div>}
                     </h3>
                     
-                    <div style={{ margin: '20px 0', border: '1px solid rgb(51, 51, 51)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '20px 0' }}>
                       {players.filter(p => p.isAlive).map((p, i) => (
-                        <div key={i} onClick={() => handleAction(rolesToCall[currentRoleIndex], p.name)} style={{ padding: '12px', cursor: 'pointer', backgroundColor: isSelectedForNightAction(rolesToCall[currentRoleIndex], p.name) ? 'rgb(68, 68, 255)' : 'transparent', borderBottom: '1px solid rgb(34, 34, 34)' }}>
+                        <div key={i} onClick={() => handleAction(rolesToCall[currentRoleIndex], p.name)} style={{ padding: '15px', cursor: 'pointer', backgroundColor: isSelectedForNightAction(rolesToCall[currentRoleIndex], p.name) ? 'rgb(68, 68, 255)' : 'rgba(0, 0, 0, 0.5)', border: '1px solid rgb(51, 51, 51)', borderRadius: '4px', wordBreak: 'break-word' }}>
                           {p.name}
                         </div>
                       ))}
@@ -330,36 +343,41 @@ export default function App() {
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <h3 style={{ color: 'rgb(255, 68, 68)' }}>Aksi Tercatat:</h3>
-                    <p style={{ fontSize: '1.2rem', color: 'white' }}>{getSummaryMessage()}</p>
+                    <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Aksi Tercatat:</h3>
+                    <p style={{ fontSize: '1.1rem', color: 'white', lineHeight: '1.5', margin: '0' }}>{getSummaryMessage()}</p>
                   </div>
                 )}
-                <button onClick={nextStep} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(68, 68, 255)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>{showSummary ? 'Konfirmasi Lanjut' : 'Peran Berikutnya'}</button>
+                <button onClick={nextStep} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(68, 68, 255)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px', fontSize: '1.1rem' }}>{showSummary ? 'Konfirmasi Lanjut' : 'Peran Berikutnya'}</button>
               </div>
             ) : (
               <div>
-                <h3 style={{ color: 'rgb(255, 68, 68)' }}>Ringkasan Kejadian Malam:</h3>
+                <h3 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Ringkasan Kejadian Malam:</h3>
                 
-                <div style={{ padding: '10px 0', marginBottom: '20px', borderBottom: '1px solid rgb(51, 51, 51)' }}>
+                <div style={{ padding: '15px', marginBottom: '20px', backgroundColor: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgb(51, 51, 51)', borderRadius: '8px' }}>
                   {getNightActionSummary().map((text, i) => (
-                    <div key={i} style={{ padding: '5px 0', fontSize: '0.9rem', color: 'lightgray' }}>{text}</div>
+                    <div key={i} style={{ padding: '8px 0', fontSize: '0.95rem', color: 'lightgray', borderBottom: i === getNightActionSummary().length - 1 ? 'none' : '1px solid rgb(34, 34, 34)', wordBreak: 'break-word', lineHeight: '1.4' }}>{text}</div>
                   ))}
-                  {getNightActionSummary().length === 0 && <div style={{ color: 'gray' }}>Tidak ada aksi malam ini</div>}
+                  {getNightActionSummary().length === 0 && <div style={{ color: 'gray', textAlign: 'center', padding: '10px 0' }}>Tidak ada aksi malam ini</div>}
                 </div>
 
                 <h3 style={{ color: 'rgb(255, 68, 68)' }}>Status Pemain:</h3>
-                {players.map((p, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid rgb(34, 34, 34)', opacity: p.isAlive ? 1 : 0.5 }}>
-                    <span>
-                      {p.name} ({p.role}) {p.transformedTo && <span style={{ color: 'yellow' }}>
-                        {p.role === 'Cursed' ? `( cursed berubah menjadi werewolf )` : `( doppelganger berubah menjadi ${p.transformedTo} )`}
-                      </span>}
-                      {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.8rem' }}> ( terkena efek cupid )</span>}
-                    </span>
-                    <button onClick={() => toggleAlive(i)} style={{ padding: '5px 10px', backgroundColor: p.isAlive ? 'rgb(102, 0, 0)' : 'rgb(51, 51, 51)', color: 'white', border: 'none', cursor: 'pointer' }}>{p.isAlive ? 'Bunuh' : 'Hidupkan'}</button>
-                  </div>
-                ))}
-                <button onClick={goToDay} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(204, 204, 0)', color: 'black', marginTop: '20px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Lanjut ke Pagi</button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {players.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'black', border: '1px solid rgb(34, 34, 34)', borderRadius: '4px', opacity: p.isAlive ? 1 : 0.5, gap: '10px' }}>
+                      <span style={{ flex: '1 1 auto', wordBreak: 'break-word', lineHeight: '1.4' }}>
+                        <span style={{ fontWeight: 'bold', textDecoration: p.isAlive ? 'none' : 'line-through' }}>{p.name}</span>
+                        <br/>
+                        <span style={{ fontSize: '0.9rem', color: 'gray' }}>({p.role})</span>
+                        {p.transformedTo && <span style={{ color: 'yellow', fontSize: '0.85rem', display: 'block', marginTop: '4px' }}>
+                          {p.role === 'Cursed' ? `(cursed berubah menjadi werewolf)` : `(doppelganger berubah menjadi ${p.transformedTo})`}
+                        </span>}
+                        {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.85rem', display: 'block', marginTop: '4px' }}> (terkena efek cupid)</span>}
+                      </span>
+                      <button onClick={() => toggleAlive(i)} style={{ flex: '0 0 auto', padding: '8px 15px', backgroundColor: p.isAlive ? 'rgb(102, 0, 0)' : 'rgb(51, 51, 51)', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{p.isAlive ? 'Bunuh' : 'Hidupkan'}</button>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={goToDay} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(204, 204, 0)', color: 'black', marginTop: '25px', fontWeight: 'bold', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1.1rem' }}>Lanjut ke Pagi</button>
               </div>
             )}
           </div>
@@ -367,46 +385,53 @@ export default function App() {
 
         {phase === 'DAY' && (
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ color: 'rgb(204, 204, 0)' }}>Pagi {dayCount}</h2>
-            <div style={{ fontSize: '3.5rem', margin: '20px 0' }}>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</div>
-            <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ padding: '10px 20px', cursor: 'pointer', border: 'none' }}>{isTimerRunning ? 'Pause' : 'Start'}</button>
+            <h2 style={{ color: 'rgb(204, 204, 0)', marginTop: 0 }}>Pagi {dayCount}</h2>
+            <div style={{ fontSize: 'clamp(3rem, 10vw, 4rem)', margin: '30px 0', fontWeight: 'bold', fontFamily: 'monospace' }}>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</div>
+            <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: '100%', maxWidth: '200px', padding: '15px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem', backgroundColor: isTimerRunning ? 'rgb(51, 51, 51)' : 'white', color: isTimerRunning ? 'white' : 'black' }}>{isTimerRunning ? 'Pause' : 'Start Timer'}</button>
             
             {hunterPrompt && (
-              <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '20px 0', borderRadius: '8px', border: '1px solid red' }}>
-                <h3 style={{ margin: '0 0 10px 0' }}>Peringatan Hunter Mati</h3>
-                <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Hunter telah terbunuh. Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting</p>
-                <button onClick={() => setHunterPrompt(false)} style={{ padding: '8px 15px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Tutup Peringatan</button>
+              <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '20px', margin: '30px 0', borderRadius: '8px', border: '2px solid red', textAlign: 'left' }}>
+                <h3 style={{ margin: '0 0 15px 0', color: 'yellow' }}>⚠️ Peringatan Hunter Mati</h3>
+                <p style={{ margin: '0 0 20px 0', fontSize: '1rem', lineHeight: '1.5' }}>Hunter telah terbunuh. Tanya pemain Hunter siapa yang ingin dia tembak mati lalu tekan tombol Eksekusi pada pemain tersebut di sesi voting.</p>
+                <button onClick={() => setHunterPrompt(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px' }}>Tutup Peringatan</button>
               </div>
             )}
 
-            <button onClick={() => setPhase('VOTING')} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '40px', border: 'none', cursor: 'pointer' }}>Masuk Sesi Voting</button>
+            <button onClick={() => setPhase('VOTING')} style={{ width: '100%', padding: '15px', backgroundColor: 'darkred', color: 'white', marginTop: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Masuk Sesi Voting</button>
           </div>
         )}
 
         {phase === 'VOTING' && (
           <div>
-            <h2 style={{ color: 'rgb(255, 68, 68)' }}>Sesi Voting</h2>
+            <h2 style={{ color: 'rgb(255, 68, 68)', marginTop: 0 }}>Sesi Voting</h2>
             {hunterPrompt && (
-              <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '20px 0', borderRadius: '8px', border: '1px solid red' }}>
-                <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Hunter telah terbunuh. Silakan eksekusi pemain yang ditembak Hunter</p>
-                <button onClick={() => setHunterPrompt(false)} style={{ padding: '8px 15px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Selesai</button>
+              <div style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', padding: '15px', margin: '0 0 20px 0', borderRadius: '8px', border: '2px solid red' }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '1rem', lineHeight: '1.4' }}>Hunter telah terbunuh. Silakan eksekusi pemain yang ditembak Hunter terlebih dahulu.</p>
+                <button onClick={() => setHunterPrompt(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: 'rgb(102, 0, 0)', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '4px' }}>Selesai Eksekusi Hunter</button>
               </div>
             )}
-            {players.filter(p => p.isAlive).map((p, i) => {
-              const realIdx = players.findIndex(orig => orig.name === p.name)
-              return (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid rgb(34, 34, 34)' }}>
-                  <span>
-                    {p.name} ({p.role}) {p.transformedTo && <span style={{ color: 'yellow' }}>
-                      {p.role === 'Cursed' ? `( cursed berubah menjadi werewolf )` : `( doppelganger berubah menjadi ${p.transformedTo} )`}
-                    </span>}
-                    {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.8rem' }}> ( terkena efek cupid )</span>}
-                  </span>
-                  <button onClick={() => handleExecution(realIdx)} style={{ backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', padding: '5px 15px', cursor: 'pointer' }}>Eksekusi</button>
-                </div>
-              )
-            })}
-            <button onClick={() => { setDayCount(dayCount + 1); startNight(dayCount + 1) }} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(0, 0, 68)', color: 'white', marginTop: '30px', border: 'none', cursor: 'pointer' }}>Malam Berikutnya</button>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {players.filter(p => p.isAlive).map((p, i) => {
+                const realIdx = players.findIndex(orig => orig.name === p.name)
+                return (
+                  <div key={i} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'black', border: '1px solid rgb(34, 34, 34)', borderRadius: '4px', gap: '10px' }}>
+                    <span style={{ flex: '1 1 auto', wordBreak: 'break-word', lineHeight: '1.4' }}>
+                      <span style={{ fontWeight: 'bold' }}>{p.name}</span>
+                      <br/>
+                      <span style={{ fontSize: '0.9rem', color: 'gray' }}>({p.role})</span>
+                      {p.transformedTo && <span style={{ color: 'yellow', fontSize: '0.85rem', display: 'block', marginTop: '4px' }}>
+                        {p.role === 'Cursed' ? `(cursed berubah menjadi werewolf)` : `(doppelganger berubah menjadi ${p.transformedTo})`}
+                      </span>}
+                      {isPemainKekasih(p.name) && <span style={{ color: 'pink', fontSize: '0.85rem', display: 'block', marginTop: '4px' }}> (terkena efek cupid)</span>}
+                    </span>
+                    <button onClick={() => handleExecution(realIdx)} style={{ flex: '0 0 auto', backgroundColor: 'rgb(102, 0, 0)', color: 'white', border: 'none', padding: '10px 15px', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Eksekusi</button>
+                  </div>
+                )
+              })}
+            </div>
+            
+            <button onClick={() => { setDayCount(dayCount + 1); startNight(dayCount + 1) }} style={{ width: '100%', padding: '15px', backgroundColor: 'rgb(0, 0, 68)', color: 'white', marginTop: '30px', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem' }}>Lanjut Malam Berikutnya</button>
           </div>
         )}
       </div>
