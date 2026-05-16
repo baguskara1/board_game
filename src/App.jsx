@@ -17,23 +17,23 @@ const COLOR_LONERS = 'rgb(153, 50, 204)'
 const COLOR_VILLAGER = 'rgb(0, 204, 102)'
 
 const ROLE_ICONS = {
-  Werewolf: "WEREWOLF.png",
-  Sorceress: "Sorceres.png",
-  "Wolf Cub": "wolfcub.png",
-  Cursed: "cursed.png",
-  Lycan: "lycan.png",
-  Cupid: "cupid.png",
-  Villager: "villager.png",
-  Mayor: "mayor.png",
-  Doppelganger: "doppelganger.png",
-  Guardian: "guardian.png",
-  Diseased: "diseased.png",
-  Hunter: "hunter.png",
-  Priest: "priest.png",
-  Joker: "joker.png",
-  Spellcaster: "speelcaster.png",
-  Seer: "seer.png",
-  "Cursed Werewolf": "WEREWOLF.png"
+  Werewolf: "/WEREWOLF.png",
+  Sorceress: "/Sorceres.png",
+  "Wolf Cub": "/wolfcub.png",
+  Cursed: "/cursed.png",
+  Lycan: "/lycan.png",
+  Cupid: "/cupid.png",
+  Villager: "/villager.png",
+  Mayor: "/mayor.png",
+  Doppelganger: "/doppelganger.png",
+  Guardian: "/guardian.png",
+  Diseased: "/diseased.png",
+  Hunter: "/hunter.png",
+  Priest: "/priest.png",
+  Joker: "/joker.png",
+  Spellcaster: "/speelcaster.png",
+  Seer: "/seer.png",
+  "Cursed Werewolf": "/WEREWOLF.png"
 }
 
 export default function App() {
@@ -156,7 +156,7 @@ export default function App() {
   }
 
   const handleResetGame = () => {
-    if (window.confirm("Hapus semua data dan mulai permainan baru?")) {
+    if (window.confirm("Hapus semua data dan mulai permainan baru")) {
       localStorage.removeItem('werewolf_game_state')
       window.location.reload()
     }
@@ -213,8 +213,8 @@ export default function App() {
     const p = players[index]
     
     setGameHistory(prev => [...prev, { 
-      phaseLabel: `Siang ${dayCount} - Hasil Voting`, 
-      logs: [`${p.name} (${p.transformedTo || p.role}) telah dieksekusi`] 
+      phaseLabel: `Siang ${dayCount} Hasil Voting`, 
+      logs: [`${p.name} telah dieksekusi`] 
     }])
 
     if (p.role === 'Joker') {
@@ -326,17 +326,17 @@ export default function App() {
     if (!target) return "Tidak ada aksi yang dilakukan"
     
     if (role === "Werewolf & Wolf Cub") {
-      return `Kawanan Werewolf telah memutuskan untuk memangsa ${target}`
+      return "Kawanan Werewolf telah memutuskan untuk memangsa target tersebut"
     }
 
     const targetPlayer = players.find(p => p.name === target)
     
-    if (role === "Doppelganger") return `Doppelganger meniru ${target}. Perannya sebagai ${targetPlayer?.role}`
-    if (role === "Cupid") return `Cupid telah menjadikan ${target} sebagai kekasihnya`
-    if (role === "Guardian") return `Guardian berhasil melindungi ${target} dari serangan malam ini`
-    if (role === "Sorceress" || role === "Seer") return `${role} melihat ${target} dengan role ${targetPlayer?.role}`
-    if (role === "Spellcaster") return `Spellcaster membungkam vote kepada ${target}`
-    return `${role} beraksi pada ${target}`
+    if (role === "Doppelganger") return "Doppelganger meniru target tersebut"
+    if (role === "Cupid") return "Cupid telah menjadikan target tersebut sebagai kekasihnya"
+    if (role === "Guardian") return "Guardian berhasil melindungi target tersebut dari serangan malam ini"
+    if (role === "Sorceress" || role === "Seer") return "Peran tersebut melihat target dengan jelas"
+    if (role === "Spellcaster") return "Spellcaster membungkam vote kepada target tersebut"
+    return "Peran tersebut beraksi pada target"
   }
 
   const getNightActionSummary = () => {
@@ -356,17 +356,17 @@ export default function App() {
         const targetRole = targetPlayer ? (targetPlayer.transformedTo || targetPlayer.role) : "Unknown"
 
         if (roleKey === "Werewolf & Wolf Cub") {
-          summaryList.push(`${actorStr} (Werewolf) membunuh ${tName} (${targetRole})`)
+          summaryList.push("Kawanan membunuh target tersebut")
         } else if (roleKey === "Guardian") {
-          summaryList.push(`${actorStr} (Guardian) melindungi ${tName} (${targetRole})`)
+          summaryList.push("Guardian melindungi target tersebut")
         } else if (roleKey === "Spellcaster") {
-          summaryList.push(`${actorStr} (Spellcaster) membungkam ${tName} (${targetRole})`)
+          summaryList.push("Spellcaster membungkam target tersebut")
         } else if (roleKey === "Seer" || roleKey === "Sorceress") {
-          summaryList.push(`${actorStr} (${roleKey}) melihat identitas ${tName} (${targetRole})`)
+          summaryList.push("Peran tersebut melihat identitas target")
         } else if (roleKey === "Cupid") {
-          summaryList.push(`${actorStr} (Cupid) menjadikan ${tName} (${targetRole}) sebagai kekasihnya`)
+          summaryList.push("Cupid menjadikan target tersebut sebagai kekasihnya")
         } else if (roleKey === "Doppelganger") {
-          summaryList.push(`${actorStr} (Doppelganger) meniru ${tName} (${targetRole})`)
+          summaryList.push("Doppelganger meniru target tersebut")
         }
       })
     })
@@ -401,7 +401,7 @@ export default function App() {
     const summary = getNightActionSummary()
     setGameHistory(prev => [...prev, { 
       phaseLabel: `Malam ${dayCount}`, 
-      logs: summary.length > 0 ? summary : ["Tidak ada aksi yang membuahkan hasil atau dilakukan."] 
+      logs: summary.length > 0 ? summary : ["Tidak ada aksi yang membuahkan hasil atau dilakukan"] 
     }])
 
     let nextWwStatus = 'NORMAL'
@@ -470,12 +470,30 @@ export default function App() {
   }
 
   return (
-    <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'lightgray', minHeight: '100vh', padding: '15px', fontFamily: 'serif', boxSizing: 'border-box' }}>
+    <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'lightgray', minHeight: '100vh', padding: '15px', fontFamily: 'serif' }}>
       <style>
         {`
-          * { box-sizing: border-box }
-          body, html { margin: 0; padding: 0; background-color: rgb(5, 5, 5) }
-          input, select, button { font-family: serif }
+          html, body, div, span, h1, h2, h3, h4, p, a, button, input, select {
+            box-sizing: border-box
+          }
+          body {
+            margin: 0
+          }
+          html {
+            padding: 0
+          }
+          body {
+            background-color: rgb(5, 5, 5)
+          }
+          input {
+            font-family: serif
+          }
+          select {
+            font-family: serif
+          }
+          button {
+            font-family: serif
+          }
         `}
       </style>
       
