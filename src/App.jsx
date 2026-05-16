@@ -17,23 +17,23 @@ const COLOR_LONERS = 'rgb(153, 50, 204)'
 const COLOR_VILLAGER = 'rgb(0, 204, 102)'
 
 const ROLE_ICONS = {
-  Werewolf: "/WEREWOLF.png",
-  Sorceress: "/Sorceres.png",
-  "Wolf Cub": "/wolfcub.png",
-  Cursed: "/cursed.png",
-  Lycan: "/lycan.png",
-  Cupid: "/cupid.png",
-  Villager: "/villager.png",
-  Mayor: "/mayor.png",
-  Doppelganger: "/doppelganger.png",
-  Guardian: "/guardian.png",
-  Diseased: "/diseased.png",
-  Hunter: "/hunter.png",
-  Priest: "/priest.png",
-  Joker: "/joker.png",
-  Spellcaster: "/speelcaster.png",
-  Seer: "/seer.png",
-  "Cursed Werewolf": "/WEREWOLF.png"
+  Werewolf: "./WEREWOLF.png",
+  Sorceress: "./Sorceres.png",
+  "Wolf Cub": "./wolfcub.png",
+  Cursed: "./cursed.png",
+  Lycan: "./lycan.png",
+  Cupid: "./cupid.png",
+  Villager: "./villager.png",
+  Mayor: "./mayor.png",
+  Doppelganger: "./doppelganger.png",
+  Guardian: "./guardian.png",
+  Diseased: "./diseased.png",
+  Hunter: "./hunter.png",
+  Priest: "./priest.png",
+  Joker: "./joker.png",
+  Spellcaster: "./speelcaster.png",
+  Seer: "./seer.png",
+  "Cursed Werewolf": "./WEREWOLF.png"
 }
 
 export default function App() {
