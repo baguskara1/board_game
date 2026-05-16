@@ -17,44 +17,118 @@ const COLOR_LONERS = 'rgb(153, 50, 204)'
 const COLOR_VILLAGER = 'rgb(0, 204, 102)'
 
 export default function App() {
-  const [players, setPlayers] = useState([])
+  const savedState = JSON.parse(localStorage.getItem('werewolf_game_state') || '{}')
+
+  const [players, setPlayers] = useState(savedState.players || [])
   const [nameInput, setNameInput] = useState('')
   const [roleInput, setRoleInput] = useState('Villager')
-  const [phase, setPhase] = useState('SETUP')
-  const [dayCount, setDayCount] = useState(1)
-  const [timeLeft, setTimeLeft] = useState(300)
-  const [isTimerRunning, setIsTimerRunning] = useState(false)
-  const [rolesToCall, setRolesToCall] = useState([])
-  const [currentRoleIndex, setCurrentRoleIndex] = useState(0)
-  const [nightLogs, setNightLogs] = useState({})
-  const [showSummary, setShowSummary] = useState(false)
-  const [winner, setWinner] = useState(null)
+  const [phase, setPhase] = useState(savedState.phase || 'SETUP')
+  const [dayCount, setDayCount] = useState(savedState.dayCount || 1)
+  const [timeLeft, setTimeLeft] = useState(savedState.timeLeft !== undefined ? savedState.timeLeft : 300)
+  const [isTimerRunning, setIsTimerRunning] = useState(savedState.isTimerRunning || false)
+  const [rolesToCall, setRolesToCall] = useState(savedState.rolesToCall || [])
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(savedState.currentRoleIndex || 0)
+  const [nightLogs, setNightLogs] = useState(savedState.nightLogs || {})
+  const [showSummary, setShowSummary] = useState(savedState.showSummary || false)
+  const [winner, setWinner] = useState(savedState.winner || null)
   
-  const [doppelTarget, setDoppelTarget] = useState(null)
-  const [cupidPair, setCupidPair] = useState([])
-  const [wwStatus, setWwStatus] = useState('NORMAL')
-  const [wwPicks, setWwPicks] = useState([])
-  const [hunterPrompt, setHunterPrompt] = useState(false)
+  const [doppelTarget, setDoppelTarget] = useState(savedState.doppelTarget || null)
+  const [cupidPair, setCupidPair] = useState(savedState.cupidPair || [])
+  const [wwStatus, setWwStatus] = useState(savedState.wwStatus || 'NORMAL')
+  const [wwPicks, setWwPicks] = useState(savedState.wwPicks || [])
+  const [hunterPrompt, setHunterPrompt] = useState(savedState.hunterPrompt || false)
+  
+  const [gameHistory, setGameHistory] = useState(savedState.gameHistory || [])
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [historyStack, setHistoryStack] = useState(savedState.historyStack || [])
 
+  // Efek Alarm
   useEffect(() => {
     let interval = null
     if (isTimerRunning && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(prev => prev - 1)
       }, 1000)
-    } else {
-      clearInterval(interval)
+    } else if (isTimerRunning && timeLeft === 0) {
+      setIsTimerRunning(false)
+      playAlarm()
     }
     return () => clearInterval(interval)
   }, [isTimerRunning, timeLeft])
 
+  // Efek Simpan Otomatis
+  useEffect(() => {
+    const gameState = {
+      players, phase, dayCount, timeLeft, isTimerRunning, rolesToCall,
+      currentRoleIndex, nightLogs, showSummary, winner, doppelTarget,
+      cupidPair, wwStatus, wwPicks, hunterPrompt, gameHistory, historyStack
+    }
+    localStorage.setItem('werewolf_game_state', JSON.stringify(gameState))
+  }, [players, phase, dayCount, timeLeft, isTimerRunning, rolesToCall, currentRoleIndex, nightLogs, showSummary, winner, doppelTarget, cupidPair, wwStatus, wwPicks, hunterPrompt, gameHistory, historyStack])
+
+  const playAlarm = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const osc = ctx.createOscillator()
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(600, ctx.currentTime)
+      osc.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 1.5)
+    } catch (e) {
+      console.log('Audio tidak didukung')
+    }
+  }
+
+  const saveSnapshot = () => {
+    const snapshot = {
+      players, phase, dayCount, timeLeft, isTimerRunning, rolesToCall,
+      currentRoleIndex, nightLogs, showSummary, winner, doppelTarget,
+      cupidPair, wwStatus, wwPicks, hunterPrompt, gameHistory
+    }
+    setHistoryStack(prev => [...prev.slice(-14), snapshot])
+  }
+
+  const handleUndo = () => {
+    if (historyStack.length === 0) return
+    const last = historyStack[historyStack.length - 1]
+    
+    setPlayers(last.players)
+    setPhase(last.phase)
+    setDayCount(last.dayCount)
+    setTimeLeft(last.timeLeft)
+    setIsTimerRunning(last.isTimerRunning)
+    setRolesToCall(last.rolesToCall)
+    setCurrentRoleIndex(last.currentRoleIndex)
+    setNightLogs(last.nightLogs)
+    setShowSummary(last.showSummary)
+    setWinner(last.winner)
+    setDoppelTarget(last.doppelTarget)
+    setCupidPair(last.cupidPair)
+    setWwStatus(last.wwStatus)
+    setWwPicks(last.wwPicks)
+    setHunterPrompt(last.hunterPrompt)
+    setGameHistory(last.gameHistory)
+    
+    setHistoryStack(prev => prev.slice(0, -1))
+  }
+
+  const handleResetGame = () => {
+    if (window.confirm("Hapus semua data dan mulai permainan baru?")) {
+      localStorage.removeItem('werewolf_game_state')
+      window.location.reload()
+    }
+  }
+
   const addPlayer = () => {
     if (!nameInput) return
+    saveSnapshot()
     setPlayers([...players, { name: nameInput, role: roleInput, isAlive: true, transformedTo: null }])
     setNameInput('')
   }
 
   const toggleAlive = (index) => {
+    saveSnapshot()
     const deadPlayerName = players[index].name
     const deadPlayerRole = players[index].role
     const isActuallyDying = players[index].isAlive
@@ -76,17 +150,42 @@ export default function App() {
   }
 
   const handleExecution = (index) => {
+    saveSnapshot()
     const p = players[index]
+    
+    setGameHistory(prev => [...prev, { 
+      phaseLabel: `Siang ${dayCount} - Hasil Voting`, 
+      logs: [`${p.name} (${p.transformedTo || p.role}) telah dieksekusi.`] 
+    }])
+
     if (p.role === 'Joker') {
       setWinner('JOKER')
     }
     if (p.role === 'Wolf Cub' || p.transformedTo === 'Wolf Cub') {
       setWwStatus('DOUBLE')
     }
-    toggleAlive(index)
+    
+    const deadPlayerName = p.name
+    const deadPlayerRole = p.role
+    const isActuallyDying = p.isAlive
+
+    if (isActuallyDying && (deadPlayerRole === 'Hunter' || p.transformedTo === 'Hunter')) {
+      setHunterPrompt(true)
+    }
+
+    const newPlayers = players.map((pl, i) => {
+      if (i === index) return { ...pl, isAlive: !pl.isAlive }
+      if (isActuallyDying && pl.isAlive && pl.role === 'Doppelganger' && doppelTarget === deadPlayerName) {
+        return { ...pl, transformedTo: deadPlayerRole }
+      }
+      return pl
+    })
+    
+    setPlayers(newPlayers)
   }
 
   const startNight = (forcedDay) => {
+    saveSnapshot()
     setPhase('NIGHT')
     setNightLogs({})
     setWwPicks([])
@@ -109,6 +208,7 @@ export default function App() {
   }
 
   const handleAction = (role, target) => {
+    saveSnapshot()
     if (role === "Werewolf & Wolf Cub") {
       if (wwStatus === 'SKIP') return
       
@@ -214,6 +314,7 @@ export default function App() {
   }
 
   const nextStep = () => {
+    saveSnapshot()
     if (!showSummary) {
       setShowSummary(true)
     } else {
@@ -232,9 +333,17 @@ export default function App() {
   }
 
   const goToDay = () => {
+    saveSnapshot()
     setPhase('DAY')
     setTimeLeft(300)
     setIsTimerRunning(false)
+
+    // Catat Riwayat
+    const summary = getNightActionSummary()
+    setGameHistory(prev => [...prev, { 
+      phaseLabel: `Malam ${dayCount}`, 
+      logs: summary.length > 0 ? summary : ["Tidak ada aksi yang membuahkan hasil/dilakukan."] 
+    }])
 
     let nextWwStatus = 'NORMAL'
     const wwTargetsStr = nightLogs["Werewolf & Wolf Cub"] || ""
@@ -276,7 +385,7 @@ export default function App() {
       <div style={{ backgroundColor: 'rgb(5, 5, 5)', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: 'serif', padding: '20px', textAlign: 'center' }}>
         <h1 style={{ color: COLOR_LONERS, fontSize: 'clamp(2.5rem, 5vw, 4rem)', margin: '0 0 20px 0' }}>Joker Menang</h1>
         <p style={{ fontSize: '1.2rem', margin: '0 0 30px 0' }}>Warga telah tertipu dan mengeksekusi Joker</p>
-        <button onClick={() => window.location.reload()} style={{ padding: '15px 30px', backgroundColor: COLOR_LONERS, color: 'white', border: 'none', cursor: 'pointer', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', width: '100%', maxWidth: '300px' }}>Main Lagi</button>
+        <button onClick={handleResetGame} style={{ padding: '15px 30px', backgroundColor: COLOR_LONERS, color: 'white', border: 'none', cursor: 'pointer', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', width: '100%', maxWidth: '300px' }}>Selesai / Main Lagi</button>
       </div>
     )
   }
@@ -291,6 +400,30 @@ export default function App() {
         `}
       </style>
       
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <button onClick={handleUndo} disabled={historyStack.length === 0} style={{ padding: '10px 15px', backgroundColor: historyStack.length === 0 ? '#333' : 'rgb(0, 102, 204)', color: 'white', border: 'none', borderRadius: '4px', cursor: historyStack.length === 0 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>↩ Batal Aksi Terakhir</button>
+        <button onClick={() => setShowHistoryModal(!showHistoryModal)} style={{ padding: '10px 15px', backgroundColor: 'rgb(153, 102, 0)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>📜 Riwayat Permainan</button>
+        <button onClick={handleResetGame} style={{ padding: '10px 15px', backgroundColor: '#333', color: 'rgb(255, 68, 68)', border: '1px solid rgb(255, 68, 68)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🗑️ Reset Data</button>
+      </div>
+
+      {showHistoryModal && (
+        <div style={{ backgroundColor: 'rgb(17, 17, 17)', padding: '20px', borderRadius: '8px', border: '1px solid rgb(153, 102, 0)', maxWidth: '600px', margin: '0 auto 20px auto' }}>
+          <h2 style={{ color: 'rgb(255, 204, 0)', marginTop: 0 }}>Catatan Riwayat</h2>
+          {gameHistory.length === 0 && <p style={{ color: 'gray' }}>Belum ada riwayat tersimpan.</p>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {gameHistory.map((history, idx) => (
+              <div key={idx} style={{ paddingBottom: '10px', borderBottom: '1px solid rgb(51, 51, 51)' }}>
+                <h4 style={{ color: 'white', margin: '0 0 5px 0' }}>{history.phaseLabel}</h4>
+                {history.logs.map((log, lIdx) => (
+                  <div key={lIdx} style={{ fontSize: '0.9rem', color: 'lightgray' }}>• {log}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <button onClick={() => setShowHistoryModal(false)} style={{ width: '100%', padding: '10px', marginTop: '15px', backgroundColor: 'rgb(51, 51, 51)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Tutup Riwayat</button>
+        </div>
+      )}
+
       <h1 style={{ color: 'darkred', textAlign: 'center', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', margin: '10px 0 20px 0' }}>Game Master Dashboard</h1>
       
       <div style={{ backgroundColor: 'rgb(17, 17, 17)', padding: '20px', borderRadius: '8px', border: '1px solid rgb(102, 0, 0)', maxWidth: '600px', width: '100%', margin: '0 auto' }}>
@@ -386,7 +519,7 @@ export default function App() {
         {phase === 'DAY' && (
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ color: 'rgb(204, 204, 0)', marginTop: 0 }}>Pagi {dayCount}</h2>
-            <div style={{ fontSize: 'clamp(3rem, 10vw, 4rem)', margin: '30px 0', fontWeight: 'bold', fontFamily: 'monospace' }}>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</div>
+            <div style={{ fontSize: 'clamp(3rem, 10vw, 4rem)', margin: '30px 0', fontWeight: 'bold', fontFamily: 'monospace', color: timeLeft === 0 ? 'red' : 'lightgray' }}>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</div>
             <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: '100%', maxWidth: '200px', padding: '15px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '1.1rem', backgroundColor: isTimerRunning ? 'rgb(51, 51, 51)' : 'white', color: isTimerRunning ? 'white' : 'black' }}>{isTimerRunning ? 'Pause' : 'Start Timer'}</button>
             
             {hunterPrompt && (
